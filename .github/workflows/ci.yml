@@ -1,0 +1,38 @@
+name: CI Hospital Pipeline
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+    # --------------------------
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configurar JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Ejecutar Tests y Generar Cobertura
+      run: mvn clean test
+      
+    - name: Cargar Reporte JaCoCo
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: reporte-cobertura
+        path: target/site/jacoco/
